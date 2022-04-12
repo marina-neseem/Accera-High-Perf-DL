@@ -349,7 +349,7 @@ optimal_package.build(name, format=acc.Package.Format.HAT_DYNAMIC, output_dir=ar
 ## Pull it all together
 For convenience, we wrote all the code snippets used in this case study in [matmul_gridsearch_case_study.py](samples/matmul_gridsearch_case_study.py) and [utils.py](samples/utils.py). To run all the case study steps, download the files and run:
 ```shell
-python matmul_gridsearch_case_study.py --matmul_dim 1020 1024 1024 --output_directory matmul_gridsearch_case_study --sample 100
+python run.py --matmul_dim 1020 1024 1024 --output_directory matmul_gridsearch_case_study --sample 100
 ```
 
 Note that the above command randomly selects 100 sample points out of the parameter grid for testing purposes. You can modify or remove the `--sample 100` argument to search fewer or more sample points.
