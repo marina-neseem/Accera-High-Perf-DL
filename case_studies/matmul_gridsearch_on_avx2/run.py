@@ -17,6 +17,10 @@ def add_matmul_functions(M, N, S, package, parameter_choices, filter_func=None, 
             for j in range(N):
                 for k in range(S):
                     C[i,j] = A[i,k] * B[k,j]
+        package: Accera package where the functions would be added
+        parameter_choices: list of lists representing the parameters choices
+        filter_func: a filtering function to be applied to the parameter choices
+        sample: the size of a randomly selected sample from the parameter grid
     '''
     A = acc.Array(role=acc.Array.Role.INPUT,element_type=acc.ScalarType.float32, shape=(M, S))
     B = acc.Array(role=acc.Array.Role.INPUT,element_type=acc.ScalarType.float32, shape=(S, N))
@@ -67,10 +71,9 @@ def add_matmul_functions(M, N, S, package, parameter_choices, filter_func=None, 
 
     # Vectorize the innermost kernel loop
     plan.vectorize(jjjj)
-    
-    function = package.add(plan, args=(A, B, C), parameters=parameters_list, base_name=f"matmul_{M}_{N}_{S}")
 
-    return function
+    # Add functions to the package    
+    package.add(plan, args=(A, B, C), parameters=parameters_list, base_name=f"matmul_{M}_{N}_{S}")
 
 
 def filter_function(parameters_choice):
@@ -84,12 +87,12 @@ def filter_function(parameters_choice):
         and fits_in_l2(m_split_size, n_split_size, s_split_size, element_size, l2_cache_size) \
         and uses_enough_l2(m_split_size, n_split_size, s_split_size, element_size, l2_cache_size)
 
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description='Accera Matrix Multiplication Grid Search Case Study')
-    parser.add_argument('--matmul_dim', dest='matmul_dim', type=int, nargs='+', help='Dimensions of the MatMul.')
-    parser.add_argument('--output_directory', type=str, default="matmul_pkg", help='Output directory.')
-    parser.add_argument('--sample', type=int, default=None, help='Optional parameter to choose a number of sample points of the parameter grid.')
+    parser.add_argument('--matmul_dim', dest='matmul_dim', type=int, nargs='+', default=[1020, 1024, 1024], \
+                        help='Dimensions of the MatMul as M N S where we multiply the matrices of dimensions [M*S] and [S*N].')
+    parser.add_argument('--output_directory', type=str, default="output", help='Output directory.')
+    parser.add_argument('--sample', type=int, default=10, help='Optional parameter to choose a number of sample points of the parameter grid.')
     args = parser.parse_args()
 
     if os.path.isdir(args.output_directory):
@@ -117,3 +120,6 @@ if __name__ == "__main__":
     optimal_package = acc.Package()
     add_matmul_functions(M=M, N=N, S=S, package=optimal_package, parameter_choices=get_optimal_parameters(hat_file_path))
     optimal_package.build("matmul", format=acc.Package.Format.HAT_DYNAMIC, output_dir=args.output_directory + "_optimal")
+
+if __name__ == "__main__":
+    main()
