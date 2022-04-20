@@ -27,7 +27,7 @@ Moreover, each case study has a README file to explain the details of what the c
 > **_NOTE:_** We will continiously add more case studies to show how to use Accera to build high performance deep learning computations.
 
 ## Contribute
-We welcome and encourage contributions with new case studies using Accera. Before you work on any, it is advised that you follow the same style as [MatMul Grid Search Case Study](case_studies/matmul_gridsearch_on_avx2) as follows:
+To increase the impact of this repository, we welcome and encourage contributions with new case studies using Accera. Before you work on any, it is advised that you follow the same style as [MatMul Grid Search Case Study](case_studies/matmul_gridsearch_on_avx2) as follows:
 
 1. Create `run.py` which contains the main code for the case study (mainly the Accera DSL).
 2. Create `utils.py` which can include any needed utility functions.
