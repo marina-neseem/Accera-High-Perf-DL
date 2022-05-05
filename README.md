@@ -4,6 +4,10 @@ High Performance Deep Learning using Accera
 ## Overview 
 This repo presents some case studies for using [Accera](https://github.com/microsoft/Accera) - the open source cross-platform compiler from Microsoft Research - to create high performance deep learning computations (i.e. GEMM, Convolution, etc.).
 
+## Contents
+- [MatMul Grid Search Case Study](case_studies/matmul_gridsearch_on_avx2/README.md)
+- [NCHWc 2D Convolution Grid Search Case Study](case_studies/nchwc_convolution_gridsearch/README.md)
+
 ## Documentation
 Refer to the original [Accera Manual](https://microsoft.github.io/Accera/Manual/) to get familiar with Accera concepts and Domain Specific Language (DSL).
 
