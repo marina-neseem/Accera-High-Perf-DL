@@ -191,7 +191,7 @@ package.build(name, format=acc.Package.Format.HAT_DYNAMIC, output_dir=name)
 ```
 
 ## Step 3 - Create a parameters grid
-As mentioned in the previous step, we assumed some values for the split sizes and the schedule loop order. However, we are not sure that those chosen sizes would give the best performance, also for each different hardware the parameters values that achieves the best performant implementation can be different. To ensure that the created Accera function is performant (i.e. has the right parameters), we define a parameters grid where our chosen parameters are:
+As mentioned in the previous step, we assumed some values for the split sizes. However, we are not sure that those chosen sizes would give the best performance, also for each different hardware the parameters values that achieves the best performant implementation can be different. To ensure that the created Accera function is performant (i.e. has the right parameters), we define a parameters grid where our chosen parameters are:
 
 1. `p_m_split_size`
 2. `p_n_split_size`
@@ -208,21 +208,8 @@ For example, we might want to:
    and the powers of 2 between 16 and 256.
 2. define the `p_n_split_2_size`, `p_n_split_3_size`, and `p_s_split_2_size` as the powers of 2 between 4 and 16.
 
-First we define the choices for each parameter.
+We can create our parameters grid by calling create_parameter_grid method.
 
-```python
-# define the p_m_split_size, p_n_split_size, and p_s_split_size split sizes as the even numbers between 4 and 8,
-# and the powers of 2 between 4 and 256
-p_m_split_size: [4, 6, 8, 16, 32, 64, 128, 256]
-p_n_split_size: [4, 6, 8, 16, 32, 64, 128, 256]
-p_s_split_size: [4, 6, 8, 16, 32, 64, 128, 256]
-
-# define the p_n_split_2_size, p_n_split_3_size and p_s_split_2_size as the powers of 2 between 4 and 16
-p_n_split_2_size: [4, 8, 16]
-p_n_split_3_size: [4, 8, 16]
-p_s_split_2_size: [4, 8, 16]
-```
-Then, we can create our parameters grid by calling create_parameter_grid method.
 ```python
 parameters_list = acc.create_parameter_grid({
     p_m_split_size: [4, 6, 8, 16, 32, 64, 128, 256],
