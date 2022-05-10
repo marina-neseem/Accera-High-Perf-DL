@@ -12,14 +12,14 @@ This repo presents some case studies for using [Accera](https://github.com/micro
 Refer to the original [Accera Manual](https://microsoft.github.io/Accera/Manual/) to get familiar with Accera concepts and Domain Specific Language (DSL).
 
 ## Setup
-Accera requires `Python 3.7-3.10`. For those case studies, you can simply install Accera using
+Accera requires `Python 3.7-3.10`. For those case studies, you can simply install the required libraries using
 ```
-pip install accera
+pip install -r requirements.txt
 ```
 
 To build Accera from the source, refer to Accera's [Install Instructions](https://microsoft.github.io/Accera/Install/).
 
-> **_NOTE:_** Those case studies are tested on `Python 3.9.10` and `Accera v1.2.3`.
+> **_NOTE:_** Those case studies are tested on `Python 3.9.10` and `Accera v1.2.4`.
 
 ## Run the Case Studies
 Each case study is located in a separate folder under the [case_studies](case_studies) folder. To run any case study, you can simply change directory to the required case study, then run

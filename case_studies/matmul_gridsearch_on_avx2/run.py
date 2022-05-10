@@ -27,7 +27,7 @@ def add_matmul_functions(M, N, S, package, parameter_choices, filter_func=None, 
     C = acc.Array(role=acc.Array.Role.INPUT_OUTPUT,element_type=acc.ScalarType.float32, shape=(M, N))
     
     p_m_split_size, p_n_split_size, p_s_split_size, \
-        p_s_split_2_size, p_n_split_2_size, p_n_split_3_size = acc.create_parameters(6)
+        p_s_split_2_size, p_n_split_2_size, p_n_split_3_size = acc.create_parameters()
 
     # Create parameters list
     parameters_list = acc.create_parameter_grid({

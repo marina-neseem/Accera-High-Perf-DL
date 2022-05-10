@@ -1,7 +1,6 @@
-[//]: # (Project: Accera)
-[//]: # (Version: 1.2.3)
-
 # Case Study - NCHWc 2D Convolution Grid Search
+
+NCHWc 2D Convolution is performing the convolution operation while the input dimensions are arranged as NCHWc, where N is the batch size, C*c is the total number of channels, H is the height, W is the width. It is an example of using data layout to improve spatial locality for more efficient computations.
 
 In this case study, we will discuss how to construct a performant implementation for NCHWc 2D Convolution on an AVX2 Machine using [Accera](https://microsoft.github.io/Accera/). First, we will show how to create a parameterized Accera schedule and plan. Then we will discuss how to create a parameters grid, and how to benchmark each point in the grid in order to pick the best performant implementation.
 
@@ -78,7 +77,9 @@ for ch in range(nchwc_channels):
                     NHWC_tensor[r, c, ch * nchwc_channels_block + ch_b] = NCHWc_tensor[ch, r, c, ch_b]
 ```
 
-For this case study, we choose the NCHWc input channels block size as well as NCHWc output filters block size to be 8 because this optimizes the usuage of the SIMD registers in the target architecture (AVX2). However, for different architectures like (AVX512), 16 would be a better choice. We will assume that the input and the output tensors are pre and post re-ordered using external functions, and we will focus on the convolution implementation itself.
+For this case study, we choose the NCHWc input channels block size (i.e. c) as well as NCHWc output filters block size to be 8. This optimizes the usuage of the SIMD registers in the target architecture (AVX2) because AVX2 has 256-bit registers so it can perform simultaneous operations on eight 32-bit single-precision floating point numbers (i.e. 8*32=256). However, for different architectures like (AVX512), 16 would be a better choice because AVX512 has 512-bit registers so it can perform simultaneous operations on sixteen 32-bit single-precision floating point numbers (i.e. 16*32=512). We will assume that the input and the output tensors are pre and post re-ordered using external functions, and we will focus on the convolution implementation itself.
+
+> _NOTE_: Check [this](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) wiki link to read about AVX2 and AVX512.
 
 Now, we can implement 2D NCHWc convolution using Accera as follows:
 
@@ -144,7 +145,7 @@ Output = acc.Array(role=acc.Array.Role.INPUT_OUTPUT, element_type=acc.ScalarType
 Then, we define some parameters that would be used later while creating the schedule and the plan.
 
 ```python
-p_out_c_split_size, p_out_r_split_size, p_out_f_split_size = acc.create_parameters(3)
+p_out_c_split_size, p_out_r_split_size, p_out_f_split_size = acc.create_parameters()
 ```
 
 Then we define the iteration logic as:
@@ -215,7 +216,7 @@ Weights = acc.Array(role=acc.Array.Role.INPUT, element_type=acc.ScalarType.float
 Output = acc.Array(role=acc.Array.Role.INPUT_OUTPUT, element_type=acc.ScalarType.float32, \
             shape=(nchwc_output_filters, output_rows, output_columns, nchwc_output_filters_block))
 
-p_out_c_split_size, p_out_r_split_size, p_out_f_split_size = acc.create_parameters(3)
+p_out_c_split_size, p_out_r_split_size, p_out_f_split_size = acc.create_parameters()
 
 nest = acc.Nest(shape=(nchwc_output_filters, input_channel_blocks, output_rows, \
                        kernel_rows, kernel_columns, \

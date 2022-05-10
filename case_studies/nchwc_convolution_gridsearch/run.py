@@ -46,7 +46,7 @@ def add_nchwc_conv2d_function(nchwc_input_shape, nchwc_output_shape, weights_sha
                 shape=(nchwc_output_filters, output_rows, output_columns, nchwc_output_filters_block))
     
     # TODO: Include the loop order as a parameter to search for
-    p_out_c_split_size, p_out_r_split_size, p_out_f_split_size = acc.create_parameters(3)
+    p_out_c_split_size, p_out_r_split_size, p_out_f_split_size = acc.create_parameters()
 
     # Create parameters list
     parameters_list = acc.create_parameter_grid({

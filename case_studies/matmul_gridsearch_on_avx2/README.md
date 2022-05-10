@@ -1,6 +1,3 @@
-[//]: # (Project: Accera)
-[//]: # (Version: 1.2.3)
-
 # Case Study - MatMul Grid Search
 
 In this case study, we will discuss how to construct a performant implementation for matrix multiplication on an AVX2 Machine using [Accera](https://microsoft.github.io/Accera/). First, we will show how to create a parameterized Accera schedule and plan, then we will discuss how to create a parameters grid, and how to benchmark each point in the grid in order to pick the best performant implementation. Note that for different target hardwares, the process would be similar, however, the results would be different.
@@ -78,7 +75,7 @@ C = acc.Array(role=acc.Array.Role.INPUT_OUTPUT, element_type=acc.ScalarType.floa
 Then, we define some parameters that would be used later while creating the schedule and the plan
 ```python
 p_m_split_size, p_n_split_size, p_s_split_size, \
-        p_s_split_2_size, p_n_split_2_size, p_n_split_3_size = acc.create_parameters(6)
+        p_s_split_2_size, p_n_split_2_size, p_n_split_3_size = acc.create_parameters()
 ```
 
 Then, we define the iteration logic for matrix multiplication
@@ -145,7 +142,7 @@ B = acc.Array(role=acc.Array.Role.INPUT, element_type=acc.ScalarType.float32, sh
 C = acc.Array(role=acc.Array.Role.INPUT_OUTPUT, element_type=acc.ScalarType.float32, shape=(M, N))
 
 p_m_split_size, p_n_split_size, p_s_split_size, \
-        p_s_split_2_size, p_n_split_2_size, p_n_split_3_size = acc.create_parameters(6)
+        p_s_split_2_size, p_n_split_2_size, p_n_split_3_size = acc.create_parameters()
 
 # Define a simple affine loop nest and name its loops i, j, k
 nest = acc.Nest(shape=(M, N, S))
