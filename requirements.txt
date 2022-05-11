@@ -1,2 +1,4 @@
 accera==1.2.4
+accera-compilers==1.2.4
+accera-llvm==1.2.4
 pandas
