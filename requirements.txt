@@ -1,4 +1,5 @@
 accera==1.2.4
 accera-compilers==1.2.4
 accera-llvm==1.2.4
+hatlib==0.0.15
 pandas
