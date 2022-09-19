@@ -7,6 +7,7 @@ This repo presents some case studies for using [Accera](https://github.com/micro
 ## Contents
 - [MatMul Grid Search Case Study](case_studies/matmul_gridsearch_on_avx2/README.md)
 - [NCHWc 2D Convolution Grid Search Case Study](case_studies/nchwc_convolution_gridsearch/README.md)
+- [Unrolled Convolution Grid Search Case Study](case_studies/unrolled_convolution_gridsearch/README.md)
 
 ## Documentation
 Refer to the original [Accera Manual](https://microsoft.github.io/Accera/Manual/) to get familiar with Accera concepts and Domain Specific Language (DSL).
@@ -19,7 +20,7 @@ pip install -r requirements.txt
 
 To build Accera from the source, refer to Accera's [Install Instructions](https://microsoft.github.io/Accera/Install/).
 
-> **_NOTE:_** Those case studies are tested on `Python 3.9.10` and `Accera v1.2.4`.
+> **_NOTE:_** Those case studies are tested on `Python 3.9.10` and `Accera v1.2.9`.
 
 ## Run the Case Studies
 Each case study is located in a separate folder under the [case_studies](case_studies) folder. To run any case study, you can simply change directory to the required case study, then run
