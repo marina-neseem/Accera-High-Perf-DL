@@ -30,9 +30,9 @@ If we have a 3D input of shape (`input_rows`,`input_columns`,`input_channels`) a
 - Then, we multiply the 2D packed kernel matrix and the 2D packed input matrix, which results in a 2D output matrix of shape (`output_filters`, `output_rows`&times;`output_columns`).
 - Finally, we use col2im to reshape the 2D packed output into 3D tensor of shape (`output_rows`,`output_columns`,`output_filters`).
 
-There are two different methods to implement unrolled convolution. In the first method, we can leverage caching and tiling to achieve the same behaviour of unrolled convolution without explicitly using im2col and col2im operations. In the second method, we can split the unrolled convolution into different steps, and create a separate schedule for each step and finally fuse them together. In this case study, we will apply the first method.
+There are two different methods to implement unrolled convolution. <ins>In the first method</ins>, we can leverage caching and tiling to achieve the same behaviour of unrolled convolution without explicitly using im2col and col2im operations. <ins>In the second method</ins>, we can split the unrolled convolution into different steps, and create a separate schedule for each step and finally fuse them together. <ins>In this case study, we will apply the first method.</ins>
 
-In this case study, we present the end-to-end steps needed to write a performant implementation for Unrolled 2D Convolution as follows:
+Here, we present the end-to-end steps needed to write a performant implementation for Unrolled 2D Convolution as follows:
 
 - [Step 1 - Create a Parameterized Accera Unrolled Convolution Function](#step-1---create-a-parameterized-accera-unrolled-convolution-function)
 - [Step 2 - Create a parameters grid](#step-2---create-a-parameters-grid)
@@ -87,7 +87,8 @@ Output = acc.Array(role=acc.Array.Role.INPUT_OUTPUT, element_type=acc.ScalarType
 
 Then, we define some parameters that would be used later while creating the schedule and the plan
 ```python
-p_outf_split1_size, p_outf_split2_size, p_outf_split3_size, p_outc_split_size, p_in_ch_split_size = acc.create_parameters()
+p_outf_split1_size, p_outf_split2_size, p_outf_split3_size, \
+            p_outc_split_size, p_in_ch_split_size = acc.create_parameters()
 ```
 
 Then, we define the iteration logic for 2D convolution.
@@ -101,15 +102,15 @@ def _():
     in_r = out_r * row_stride + k_r
     in_c = out_c * column_stride + k_c
     Output[out_r, out_c, out_f] += Input[in_r, in_c, in_ch] * Kernel[k_r, k_c, in_ch, out_f]
-
-# Create the schedule
-schedule = nest.create_schedule()
 ```
 
 Next, we define the convolution schedule. As mentioned earlier, we choose to first do a tiling split per dimension to improve cache utilization, then we do a second round of smaller splits to improve register utilization.
 
 Recall from the matrix multiplication case study, we concluded that the following splits and order optimize cache and registers utilization.
 ```python
+# Create the schedule
+schedule = nest.create_schedule()
+
 # Tile splits to place some blocks of the input and output matrices in the L2 cache
 ii, jj, kk = schedule.tile(indices=(i, j, k), shape=(p_m_split_size, p_n_split_size, p_s_split_size))
 
@@ -118,14 +119,17 @@ kkk = schedule.split(kk, p_s_split_2_size)
 jjj = schedule.split(jj, p_n_split_2_size)
 jjjj = schedule.split(jjj, p_n_split_3_size)
 
-# Start from this order that separates the large scale loops (i, j, k)
+# Start from this order that separates the large scale loops (j, k, i)
 # from the high performance loops (jj, kk, kkk, ii, jjj, jjjj)
-schedule.reorder(i, j, k, jj, kk, kkk, ii, jjj, jjjj)
+schedule.reorder(j, k, i, jj, kk, kkk, ii, jjj, jjjj)
 ```
 
 In the unrolled convolution, our ultimate goal is to convert the convolution operation into a matrix multiplication, so we choose the splits and the loop order to mimic the schedule of the performant matrix multiplication as discovered from the matrix multiplication case study.
 
 ```python
+# Create the schedule
+schedule = nest.create_schedule()
+
 # Tile splits to place some blocks of the input and output matrices in the L2 cache
 out_f2 = schedule.split(out_f, p_outf_split1_size)  # jj
 out_f3 = schedule.split(out_f2, p_outf_split2_size)  # jjj
@@ -260,8 +264,8 @@ where `parameters_list` is defined in the previous step.
 ## Step 5 - Benchmark the package on the target hardware
 Finally, we can use [HAT tools](https://github.com/microsoft/hat) to benchmark our Accera package on the target hardware, and write back the timing results to the package.
 ```python
-hat_file_path = os.path.join(package_directory, "nchwc_conv.hat")
-hat.run_benchmark(hat_file_path, store_in_hat=write_back, batch_size=5)
+hat_file_path = os.path.join(args.output_directory, "unrolled_conv.hat")
+hat.run_benchmark(hat_file_path, store_in_hat=True, batch_size=5)
 ```
 
 ## Step 6 - Find the optimal parameters choice
@@ -287,12 +291,12 @@ def get_optimal_parameters(hat_file_path):
 
 
 ## Step 7 - Create a Accera package with the optimal function
-Finally, we can use the optimal parameters to create a Accera package with the best performant function. We can do ths by repeating [Step 2](#step-1---create-a-parameterized-accera-unrolled-convolution-function) and replace the values in `parameters_values` by the optimal values.
+Finally, we can use the optimal parameters to create a Accera package with the best performant function. We can do ths by repeating [Step 1](#step-1---create-a-parameterized-accera-unrolled-convolution-function) and replace the values in `parameters_values` by the optimal values.
 
 ## Pull it all together
 For convenience, we wrote all the code snippets used in this case study in [run.py](run.py) and [utils.py](utils.py). To run all the case study steps, download the files and run:
 ```shell
-python run.py --input_shape 7 7 512 --kernel_shape 3 3 --output_filters 512 --stride 1 1 --output_directory nchwc_conv2d_gridsearch_case_study --sample 100
+python run.py --input_shape 7 7 512 --kernel_shape 3 3 --output_filters 512 --stride 1 1 --output_directory unrollled_conv_output --sample 100
 ```
 
 > **_Note that_** the above command randomly selects 100 sample points out of the parameter grid for testing purposes. You can modify or remove the `--sample 100` argument to search fewer or more sample points.
