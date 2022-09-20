@@ -30,7 +30,7 @@ If we have a 3D input of shape (`input_rows`,`input_columns`,`input_channels`) a
 - Then, we multiply the 2D packed kernel matrix and the 2D packed input matrix, which results in a 2D output matrix of shape (`output_filters`, `output_rows`&times;`output_columns`).
 - Finally, we use col2im to reshape the 2D packed output into 3D tensor of shape (`output_rows`,`output_columns`,`output_filters`).
 
-There are two different methods to implement unrolled convolution. <ins>In the first method</ins>, we can leverage caching and tiling to achieve the same behaviour of unrolled convolution without explicitly using im2col and col2im operations. <ins>In the second method</ins>, we can split the unrolled convolution into different steps, and create a separate schedule for each step and finally fuse them together. <ins>In this case study, we will apply the first method.</ins>
+There are two different methods to implement unrolled convolution. In the first method, we can leverage caching and tiling to achieve the same behaviour of unrolled convolution without explicitly using im2col and col2im operations. In the second method, we can split the unrolled convolution into different steps, and create a separate schedule for each step and finally fuse them together. <ins>In this case study, we will apply the first method.</ins>
 
 Here, we present the end-to-end steps needed to write a performant implementation for Unrolled 2D Convolution as follows:
 
@@ -64,7 +64,7 @@ For the second round of tiles, we choose to split `output_filters` again twice f
 
 Now, let's write the Accera code to represent this sequence.
 
-First, we define the input and output arrays
+First, we define the input, weights, and output arrays
 ```python
 import accera as acc
 
@@ -244,8 +244,8 @@ parameters_list = acc.create_parameter_grid({
     outc_split_size: [4, 6, 8],
     in_ch_split_size: [32, 64, 128, 256]
     }, filter_func=filter_function, sample=10)
-> **_Note_** `sample` can be used to specify the size of a random sample from the parameters grid (for testing purposes).
 ```
+> **_Note_** `sample` can be used to specify the size of a random sample from the parameters grid (for testing purposes).
 
 ## Step 4 - Create a Accera package with all parameters choices in the filtered parameters grid
 In this step, we would create a Accera package with all parameters choices and the filter defined above.
@@ -291,7 +291,7 @@ def get_optimal_parameters(hat_file_path):
 
 
 ## Step 7 - Create a Accera package with the optimal function
-Finally, we can use the optimal parameters to create a Accera package with the best performant function. We can do ths by repeating [Step 1](#step-1---create-a-parameterized-accera-unrolled-convolution-function) and replace the values in `parameters_values` by the optimal values.
+Finally, we can use the optimal parameters to create a Accera package with the best performant function. We can do this by repeating [Step 1](#step-1---create-a-parameterized-accera-unrolled-convolution-function) and replace the values in `parameters_values` by the optimal values.
 
 ## Pull it all together
 For convenience, we wrote all the code snippets used in this case study in [run.py](run.py) and [utils.py](utils.py). To run all the case study steps, download the files and run:
@@ -299,4 +299,4 @@ For convenience, we wrote all the code snippets used in this case study in [run.
 python run.py --input_shape 7 7 512 --kernel_shape 3 3 --output_filters 512 --stride 1 1 --output_directory unrollled_conv_output --sample 100
 ```
 
-> **_Note that_** the above command randomly selects 100 sample points out of the parameter grid for testing purposes. You can modify or remove the `--sample 100` argument to search fewer or more sample points.
+> **_Note_** that the above command randomly selects 100 sample points out of the parameter grid for testing purposes. You can modify or remove the `--sample 100` argument to search fewer or more sample points.
